@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserPlus, Search, Edit2, Trash2, Mail, Phone, Briefcase, Eye, EyeOff, FileText } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Mail, Phone, Briefcase, Eye, EyeOff, FileText, Key } from 'lucide-react';
 import { Database } from '../../lib/database.types';
 import WorkerDetails from './WorkerDetails';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export default function WorkersManagement() {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const [workers, setWorkers] = useState<Profile[]>([]);
   const [filteredWorkers, setFilteredWorkers] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +17,10 @@ export default function WorkersManagement() {
   const [selectedWorker, setSelectedWorker] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordChangeWorker, setPasswordChangeWorker] = useState<Profile | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -50,7 +54,6 @@ export default function WorkersManagement() {
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .neq('role', 'admin')
         .order('created_at', { ascending: false });
 
       setWorkers(data || []);
@@ -154,6 +157,58 @@ export default function WorkersManagement() {
       console.error('Error deleting worker:', error);
       alert(error instanceof Error ? error.message : 'Errore durante l\'eliminazione del lavoratore');
     }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!passwordChangeWorker || !newPassword) return;
+    if (newPassword.length < 6) {
+      alert('La password deve essere di almeno 6 caratteri');
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/change-password`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: passwordChangeWorker.id,
+            new_password: newPassword,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Errore durante il cambio password');
+      }
+
+      alert('Password modificata con successo');
+      setShowPasswordModal(false);
+      setPasswordChangeWorker(null);
+      setNewPassword('');
+      setShowNewPassword(false);
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert(error instanceof Error ? error.message : 'Errore durante il cambio password');
+    }
+  };
+
+  const openPasswordModal = (worker: Profile) => {
+    setPasswordChangeWorker(worker);
+    setNewPassword('');
+    setShowNewPassword(false);
+    setShowPasswordModal(true);
   };
 
   const openEditModal = (worker: Profile) => {
@@ -344,6 +399,15 @@ export default function WorkersManagement() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => openPasswordModal(worker)}
+                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          title="Cambia password"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(worker.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -365,6 +429,78 @@ export default function WorkersManagement() {
           worker={selectedWorker}
           onClose={() => setSelectedWorker(null)}
         />
+      )}
+
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Cambia Password
+            </h2>
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
+                <strong>Utente:</strong> {passwordChangeWorker?.full_name}
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                {passwordChangeWorker?.email}
+              </p>
+            </div>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nuova Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    minLength={6}
+                    placeholder="Inserisci la nuova password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  La password deve essere di almeno 6 caratteri
+                </p>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordChangeWorker(null);
+                    setNewPassword('');
+                    setShowNewPassword(false);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white px-4 py-2 rounded-lg hover:from-yellow-500 hover:to-yellow-400 transition-all"
+                >
+                  Cambia Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {showModal && (
