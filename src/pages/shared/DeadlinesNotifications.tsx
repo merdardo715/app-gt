@@ -366,7 +366,8 @@ export default function DeadlinesNotifications() {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
             >
               <option value="all">Tutte le priorità</option>
               <option value="urgent">Urgente</option>
@@ -383,7 +384,8 @@ export default function DeadlinesNotifications() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+                style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
               >
                 <option value="all">Tutti i tipi</option>
                 <option value="medical_checkup">Visite Mediche</option>
