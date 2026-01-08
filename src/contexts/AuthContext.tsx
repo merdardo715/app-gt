@@ -77,8 +77,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
+      if (error) {
+        const message = error.message;
+        if (message.includes('Failed to fetch')) {
+          return { error: new Error('Impossibile connettersi al server. Verifica la tua connessione internet.') };
+        } else if (message.includes('Invalid login credentials')) {
+          return { error: new Error('Credenziali non valide. Riprova.') };
+        }
+      }
       return { error };
     } catch (error) {
+      const message = (error as Error).message;
+      if (message.includes('Failed to fetch')) {
+        return { error: new Error('Impossibile connettersi al server. Verifica la tua connessione internet.') };
+      }
       return { error: error as Error };
     }
   };

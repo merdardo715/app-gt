@@ -55,7 +55,14 @@ export default function Register({ onBackToLogin, onRegisterSuccess }: RegisterP
         throw new Error('Registrazione fallita');
       }
     } catch (err: any) {
-      setError(err.message || 'Errore durante la registrazione');
+      const errorMessage = err.message || 'Errore durante la registrazione';
+      if (errorMessage.includes('Failed to fetch')) {
+        setError('Impossibile connettersi al server. Verifica la tua connessione internet.');
+      } else if (errorMessage.includes('already registered')) {
+        setError('Questo indirizzo email è già registrato. Prova ad accedere.');
+      } else {
+        setError(errorMessage);
+      }
       setLoading(false);
     }
   };
