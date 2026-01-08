@@ -62,9 +62,19 @@ interface MonthlySummary {
   transaction_count: number;
 }
 
+interface InvoiceCalculation {
+  id: string;
+  type: 'income' | 'expense' | 'estimate';
+  invoice_number: string;
+  invoice_date: string;
+  client_name: string;
+  amount: number;
+  created_at: string;
+}
+
 export default function AccountingManagement() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'invoices' | 'schedule' | 'riba' | 'advances' | 'cards'>('invoices');
+  const [activeTab, setActiveTab] = useState<'invoices' | 'schedule' | 'riba' | 'advances' | 'cards' | 'calculations'>('invoices');
   const [loading, setLoading] = useState(true);
 
   const [issuedInvoices, setIssuedInvoices] = useState<IssuedInvoice[]>([]);
@@ -72,11 +82,13 @@ export default function AccountingManagement() {
   const [supplierRiba, setSupplierRiba] = useState<SupplierRiba[]>([]);
   const [invoiceAdvances, setInvoiceAdvances] = useState<InvoiceAdvance[]>([]);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary[]>([]);
+  const [invoiceCalculations, setInvoiceCalculations] = useState<InvoiceCalculation[]>([]);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showRibaModal, setShowRibaModal] = useState(false);
   const [showAdvanceModal, setShowAdvanceModal] = useState(false);
+  const [showCalculationModal, setShowCalculationModal] = useState(false);
 
   const [invoiceForm, setInvoiceForm] = useState({
     invoice_number: '',
@@ -115,6 +127,14 @@ export default function AccountingManagement() {
     notes: ''
   });
 
+  const [calculationForm, setCalculationForm] = useState({
+    type: 'income' as 'income' | 'expense' | 'estimate',
+    invoice_number: '',
+    invoice_date: new Date().toISOString().split('T')[0],
+    client_name: '',
+    amount: ''
+  });
+
   const [editingItem, setEditingItem] = useState<string | null>(null);
 
   useEffect(() => {
@@ -125,12 +145,13 @@ export default function AccountingManagement() {
     try {
       setLoading(true);
 
-      const [invoicesRes, scheduleRes, ribaRes, advancesRes, summaryRes] = await Promise.all([
+      const [invoicesRes, scheduleRes, ribaRes, advancesRes, summaryRes, calculationsRes] = await Promise.all([
         supabase.from('issued_invoices').select('*').order('due_date', { ascending: false }),
         supabase.from('payment_schedule').select('*').order('due_date', { ascending: false }),
         supabase.from('supplier_riba').select('*').order('due_date', { ascending: false }),
         supabase.from('invoice_advances').select('*').order('advance_date', { ascending: false }),
-        supabase.from('monthly_cards_summary').select('*')
+        supabase.from('monthly_cards_summary').select('*'),
+        supabase.from('invoice_calculations').select('*').order('invoice_date', { ascending: false })
       ]);
 
       if (invoicesRes.error) throw invoicesRes.error;
@@ -138,12 +159,14 @@ export default function AccountingManagement() {
       if (ribaRes.error) throw ribaRes.error;
       if (advancesRes.error) throw advancesRes.error;
       if (summaryRes.error) throw summaryRes.error;
+      if (calculationsRes.error) throw calculationsRes.error;
 
       setIssuedInvoices(invoicesRes.data || []);
       setPaymentSchedule(scheduleRes.data || []);
       setSupplierRiba(ribaRes.data || []);
       setInvoiceAdvances(advancesRes.data || []);
       setMonthlySummary(summaryRes.data || []);
+      setInvoiceCalculations(calculationsRes.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
       alert('Errore nel caricamento dei dati');
@@ -446,6 +469,59 @@ export default function AccountingManagement() {
     setEditingItem(null);
   };
 
+  const handleAddCalculation = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const { error } = await supabase.from('invoice_calculations').insert({
+        type: calculationForm.type,
+        invoice_number: calculationForm.invoice_number,
+        invoice_date: calculationForm.invoice_date,
+        client_name: calculationForm.client_name,
+        amount: parseFloat(calculationForm.amount),
+        organization_id: profile?.organization_id,
+        created_by: profile?.id
+      });
+
+      if (error) throw error;
+
+      setShowCalculationModal(false);
+      resetCalculationForm();
+      await loadData();
+    } catch (error) {
+      console.error('Error adding calculation:', error);
+      alert('Errore nell\'aggiunta del calcolo');
+    }
+  };
+
+  const handleDeleteCalculation = async (id: string) => {
+    if (!confirm('Eliminare questo elemento?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('invoice_calculations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      await loadData();
+    } catch (error) {
+      console.error('Error deleting calculation:', error);
+      alert('Errore nell\'eliminazione del calcolo');
+    }
+  };
+
+  const resetCalculationForm = () => {
+    setCalculationForm({
+      type: 'income',
+      invoice_number: '',
+      invoice_date: new Date().toISOString().split('T')[0],
+      client_name: '',
+      amount: ''
+    });
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('it-IT', {
       style: 'currency',
@@ -599,6 +675,17 @@ export default function AccountingManagement() {
             >
               <CreditCard className="w-4 h-4 inline mr-2" />
               Carte & Telepass
+            </button>
+            <button
+              onClick={() => setActiveTab('calculations')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'calculations'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <DollarSign className="w-4 h-4 inline mr-2" />
+              Calcolo Fatture
             </button>
           </nav>
         </div>
@@ -938,6 +1025,131 @@ export default function AccountingManagement() {
               ) : (
                 <p className="text-center text-gray-500 py-8">Nessuna transazione registrata</p>
               )}
+            </div>
+          )}
+
+          {activeTab === 'calculations' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Calcolo Fatture</h2>
+                <button
+                  onClick={() => setShowCalculationModal(true)}
+                  className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nuovo Elemento
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-green-900 mb-4">Fatture Incasso</h3>
+                  <div className="space-y-2 mb-4">
+                    {invoiceCalculations.filter(c => c.type === 'income').map((calc) => (
+                      <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{calc.invoice_number}</p>
+                          <p className="text-xs text-gray-600">{calc.client_name}</p>
+                          <p className="text-xs text-gray-500">{formatDate(calc.invoice_date)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-green-600">{formatCurrency(parseFloat(calc.amount.toString()))}</p>
+                          <button
+                            onClick={() => handleDeleteCalculation(calc.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-green-300 pt-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium text-green-900">Totale Incassi:</p>
+                      <p className="text-2xl font-bold text-green-700">
+                        {formatCurrency(
+                          invoiceCalculations
+                            .filter(c => c.type === 'income')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-red-900 mb-4">Fatture Spese</h3>
+                  <div className="space-y-2 mb-4">
+                    {invoiceCalculations.filter(c => c.type === 'expense').map((calc) => (
+                      <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{calc.invoice_number}</p>
+                          <p className="text-xs text-gray-600">{calc.client_name}</p>
+                          <p className="text-xs text-gray-500">{formatDate(calc.invoice_date)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-red-600">{formatCurrency(parseFloat(calc.amount.toString()))}</p>
+                          <button
+                            onClick={() => handleDeleteCalculation(calc.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-red-300 pt-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium text-red-900">Totale Spese:</p>
+                      <p className="text-2xl font-bold text-red-700">
+                        {formatCurrency(
+                          invoiceCalculations
+                            .filter(c => c.type === 'expense')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4">Preventivi</h3>
+                  <div className="space-y-2 mb-4">
+                    {invoiceCalculations.filter(c => c.type === 'estimate').map((calc) => (
+                      <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{calc.invoice_number}</p>
+                          <p className="text-xs text-gray-600">{calc.client_name}</p>
+                          <p className="text-xs text-gray-500">{formatDate(calc.invoice_date)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-blue-600">{formatCurrency(parseFloat(calc.amount.toString()))}</p>
+                          <button
+                            onClick={() => handleDeleteCalculation(calc.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-blue-300 pt-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium text-blue-900">Totale Preventivi:</p>
+                      <p className="text-2xl font-bold text-blue-700">
+                        {formatCurrency(
+                          invoiceCalculations
+                            .filter(c => c.type === 'estimate')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -1375,6 +1587,101 @@ export default function AccountingManagement() {
                 <button
                   type="submit"
                   className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                >
+                  Aggiungi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showCalculationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Nuovo Elemento</h2>
+            <form onSubmit={handleAddCalculation} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Categoria *
+                  </label>
+                  <select
+                    value={calculationForm.type}
+                    onChange={(e) => setCalculationForm({ ...calculationForm, type: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  >
+                    <option value="income">Fattura Incasso</option>
+                    <option value="expense">Fattura Spesa</option>
+                    <option value="estimate">Preventivo</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Numero Fattura/Preventivo *
+                  </label>
+                  <input
+                    type="text"
+                    value={calculationForm.invoice_number}
+                    onChange={(e) => setCalculationForm({ ...calculationForm, invoice_number: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data *
+                  </label>
+                  <input
+                    type="date"
+                    value={calculationForm.invoice_date}
+                    onChange={(e) => setCalculationForm({ ...calculationForm, invoice_date: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome Cliente *
+                  </label>
+                  <input
+                    type="text"
+                    value={calculationForm.client_name}
+                    onChange={(e) => setCalculationForm({ ...calculationForm, client_name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="Inserisci nome cliente"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Importo (€) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={calculationForm.amount}
+                    onChange={(e) => setCalculationForm({ ...calculationForm, amount: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCalculationModal(false);
+                    resetCalculationForm();
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
                 >
                   Aggiungi
                 </button>
