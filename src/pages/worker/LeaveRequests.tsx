@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Plus, Calendar, Clock, FileText, CheckCircle, XCircle, AlertCircle, Upload } from 'lucide-react';
 import { Database } from '../../lib/database.types';
+import { notifyLeaveRequest } from '../../lib/notifications';
 
 type LeaveBalance = Database['public']['Tables']['leave_balances']['Row'];
 type LeaveRequest = Database['public']['Tables']['leave_requests']['Row'] & {
@@ -138,9 +139,26 @@ export default function LeaveRequests() {
         requestData.certificate_url = certificateUrl;
       }
 
-      const { error } = await supabase.from('leave_requests').insert(requestData);
+      const { data: newRequest, error } = await supabase
+        .from('leave_requests')
+        .insert(requestData)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      if (newRequest && profile?.organization_id && profile?.full_name) {
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('organization_id', profile.organization_id)
+          .in('role', ['admin', 'administrator']);
+
+        if (admins && admins.length > 0) {
+          const adminIds = admins.map(a => a.id);
+          await notifyLeaveRequest(adminIds, profile.full_name, newRequest.id);
+        }
+      }
 
       setShowModal(false);
       resetForm();

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Calendar, Plus, Trash2, Building2, User, Clock, Edit, Truck } from 'lucide-react';
 import { Database } from '../../lib/database.types';
+import { notifyNewAssignment } from '../../lib/notifications';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Worksite = Database['public']['Tables']['worksites']['Row'];
@@ -105,13 +106,27 @@ export default function AssignmentsManagement() {
           .eq('id', editingId);
         error = result.error;
       } else {
-        const result = await supabase
+        const { data: newAssignment, error: insertError } = await supabase
           .from('assignments')
           .insert({
             ...assignmentData,
             created_by: user?.id,
-          });
-        error = result.error;
+          })
+          .select()
+          .single();
+
+        error = insertError;
+
+        if (!insertError && newAssignment) {
+          const worksite = worksites.find(w => w.id === formData.worksite_id);
+          if (worksite) {
+            await notifyNewAssignment(
+              formData.worker_id,
+              worksite.name,
+              newAssignment.id
+            );
+          }
+        }
       }
 
       if (error) throw error;

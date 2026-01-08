@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { CheckCircle, XCircle, Clock, Calendar, FileText, AlertCircle, Download } from 'lucide-react';
 import { Database } from '../../lib/database.types';
+import { notifyLeaveResponse } from '../../lib/notifications';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type LeaveRequest = Database['public']['Tables']['leave_requests']['Row'] & {
@@ -45,6 +46,11 @@ export default function LeaveRequestsApproval() {
   const handleApproveReject = async (requestId: string, status: 'approved' | 'rejected') => {
     setProcessing(requestId);
     try {
+      const request = requests.find(r => r.id === requestId);
+      if (!request) {
+        throw new Error('Richiesta non trovata');
+      }
+
       const { error } = await supabase
         .from('leave_requests')
         .update({
@@ -55,6 +61,8 @@ export default function LeaveRequestsApproval() {
         .eq('id', requestId);
 
       if (error) throw error;
+
+      await notifyLeaveResponse(request.worker_id, status, requestId);
 
       await loadRequests();
     } catch (error) {

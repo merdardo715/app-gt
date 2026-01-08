@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageSquare, Plus, Trash2, AlertCircle, Info, Bell, FileText, Download, Upload } from 'lucide-react';
 import { Database } from '../../lib/database.types';
+import { notifyNewAnnouncement } from '../../lib/notifications';
 
 type Announcement = Database['public']['Tables']['announcements']['Row'] & {
   worksite?: { name: string } | null;
@@ -92,7 +93,7 @@ export default function AnnouncementsManagement() {
       const expiresAt = new Date(formData.expires_at);
       expiresAt.setHours(23, 59, 59, 999);
 
-      const { error } = await supabase.from('announcements').insert({
+      const { data: newAnnouncement, error } = await supabase.from('announcements').insert({
         title: formData.title,
         message: formData.message,
         priority: formData.priority,
@@ -103,9 +104,17 @@ export default function AnnouncementsManagement() {
         created_by: user?.id || '',
         organization_id: profile?.organization_id,
         expires_at: expiresAt.toISOString(),
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      if (newAnnouncement && profile?.organization_id) {
+        await notifyNewAnnouncement(
+          newAnnouncement.id,
+          formData.title,
+          profile.organization_id
+        );
+      }
 
       setShowModal(false);
       resetForm();

@@ -141,11 +141,13 @@ export default function NotificationBell() {
     <div className="relative">
       <button
         onClick={handleBellClick}
-        className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+        className={`relative p-2 text-white hover:text-gray-200 transition-all ${
+          unreadCount > 0 ? 'animate-pulse' : ''
+        }`}
       >
-        <Bell className="w-6 h-6" />
+        <Bell className="w-7 h-7 drop-shadow-lg" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full shadow-lg animate-bounce">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
