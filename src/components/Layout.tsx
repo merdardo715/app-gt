@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Building2, Users, Calendar, MessageSquare, LayoutDashboard, Clock, Truck, FileText, CalendarCheck, CalendarClock, CreditCard, UserCheck, BookOpen, Receipt, Bell, ClipboardList } from 'lucide-react';
+import { LogOut, Building2, Users, Calendar, MessageSquare, LayoutDashboard, Clock, Truck, FileText, CalendarCheck, CalendarClock, CreditCard, UserCheck, BookOpen, Receipt, Bell, ClipboardList, Archive } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
 interface LayoutProps {
@@ -29,6 +29,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'accounting', label: 'Contabilità', icon: Receipt },
     { id: 'deadlines', label: 'Scadenze', icon: Bell },
     { id: 'regulations', label: 'Regolamento', icon: BookOpen },
+    { id: 'archive', label: 'Archivio', icon: Archive },
   ];
 
   const workerMenuItems = [
@@ -90,6 +91,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'accounting', label: 'Contabilità', icon: Receipt },
     { id: 'deadlines', label: 'Scadenze', icon: Bell },
     { id: 'regulations', label: 'Regolamento', icon: BookOpen },
+    { id: 'archive', label: 'Archivio', icon: Archive },
   ];
 
   const getMenuItems = () => {

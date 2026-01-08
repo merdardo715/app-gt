@@ -29,6 +29,7 @@ import AccountingManagement from './pages/admin/AccountingManagement';
 import DeadlinesNotifications from './pages/shared/DeadlinesNotifications';
 import CombinedTimeTracking from './pages/administrator/CombinedTimeTracking';
 import CombinedLeaveRequests from './pages/administrator/CombinedLeaveRequests';
+import Archive from './pages/admin/Archive';
 import NotificationPermissionModal from './components/NotificationPermissionModal';
 
 function AppContent() {
@@ -131,6 +132,8 @@ function AppContent() {
             return <DeadlinesNotifications />;
           case 'regulations':
             return <CompanyRegulations />;
+          case 'archive':
+            return <Archive />;
           default:
             return <AdminDashboard />;
         }
@@ -169,6 +172,8 @@ function AppContent() {
             return <DeadlinesNotifications />;
           case 'regulations':
             return <CompanyRegulations />;
+          case 'archive':
+            return <Archive />;
           default:
             return <AdminDashboard />;
         }
