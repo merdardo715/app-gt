@@ -41,7 +41,7 @@ export default function AvailabilityCalendar() {
       const { data: workersData } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['worker', 'sales_manager'])
+        .in('role', ['worker', 'sales_manager', 'administrator', 'org_manager', 'admin'])
         .eq('organization_id', profile?.organization_id)
         .order('full_name');
 

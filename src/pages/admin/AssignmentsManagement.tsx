@@ -48,7 +48,7 @@ export default function AssignmentsManagement() {
       const { data: workersData } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['worker', 'sales_manager'])
+        .in('role', ['worker', 'sales_manager', 'administrator', 'org_manager', 'admin'])
         .order('full_name');
 
       const { data: worksitesData } = await supabase

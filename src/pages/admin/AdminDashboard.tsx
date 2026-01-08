@@ -32,7 +32,7 @@ export default function AdminDashboard() {
       const { data: workers } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['worker', 'sales_manager']);
+        .in('role', ['worker', 'sales_manager', 'administrator', 'org_manager', 'admin']);
 
       const activeCount = workers?.filter(w => w.status === 'active').length || 0;
       const onBreakCount = workers?.filter(w => w.status === 'on_break').length || 0;
