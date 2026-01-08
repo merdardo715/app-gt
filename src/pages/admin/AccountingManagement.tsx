@@ -732,7 +732,8 @@ export default function AccountingManagement() {
                         <select
                           value={invoice.payment_status}
                           onChange={(e) => handleUpdateInvoice(invoice.id, { payment_status: e.target.value as any })}
-                          className="text-sm border border-gray-300 rounded px-2 py-1"
+                          className="text-sm border border-gray-300 rounded px-2 py-1 pr-8 appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+                          style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
                         >
                           <option value="pending">In Attesa</option>
                           <option value="paid">Pagato</option>
@@ -796,7 +797,8 @@ export default function AccountingManagement() {
                         <select
                           value={item.payment_status}
                           onChange={(e) => handleUpdateScheduleItem(item.id, { payment_status: e.target.value as any })}
-                          className="text-sm border border-gray-300 rounded px-2 py-1"
+                          className="text-sm border border-gray-300 rounded px-2 py-1 pr-8 appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+                          style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
                         >
                           <option value="pending">In Attesa</option>
                           <option value="paid">Pagato</option>
@@ -871,7 +873,8 @@ export default function AccountingManagement() {
                           <select
                             value={riba.payment_status}
                             onChange={(e) => handleUpdateRiba(riba.id, { payment_status: e.target.value as any })}
-                            className="text-sm border border-gray-300 rounded px-2 py-1"
+                            className="text-sm border border-gray-300 rounded px-2 py-1 pr-8 appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+                            style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
                           >
                             <option value="pending">In Attesa</option>
                             <option value="paid">Pagato</option>
@@ -932,7 +935,8 @@ export default function AccountingManagement() {
                         <select
                           value={advance.payment_status}
                           onChange={(e) => handleUpdateAdvance(advance.id, { payment_status: e.target.value as any })}
-                          className="text-sm border border-gray-300 rounded px-2 py-1"
+                          className="text-sm border border-gray-300 rounded px-2 py-1 pr-8 appearance-none bg-no-repeat bg-right bg-[length:16px] cursor-pointer"
+                          style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.25rem center" }}
                         >
                           <option value="pending">In Attesa</option>
                           <option value="received">Ricevuto</option>
@@ -1205,7 +1209,8 @@ export default function AccountingManagement() {
                   <select
                     value={invoiceForm.payment_status}
                     onChange={(e) => setInvoiceForm({ ...invoiceForm, payment_status: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="pending">In Attesa</option>
@@ -1297,7 +1302,8 @@ export default function AccountingManagement() {
                   <select
                     value={scheduleForm.type}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="bill">Bolletta</option>
@@ -1326,7 +1332,8 @@ export default function AccountingManagement() {
                   <select
                     value={scheduleForm.payment_status}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, payment_status: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="pending">In Attesa</option>
@@ -1431,7 +1438,8 @@ export default function AccountingManagement() {
                   <select
                     value={ribaForm.payment_status}
                     onChange={(e) => setRibaForm({ ...ribaForm, payment_status: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="pending">In Attesa</option>
@@ -1541,7 +1549,8 @@ export default function AccountingManagement() {
                   <select
                     value={advanceForm.payment_status}
                     onChange={(e) => setAdvanceForm({ ...advanceForm, payment_status: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="pending">In Attesa</option>
@@ -1609,7 +1618,8 @@ export default function AccountingManagement() {
                   <select
                     value={calculationForm.type}
                     onChange={(e) => setCalculationForm({ ...calculationForm, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg appearance-none bg-no-repeat bg-right bg-[length:20px] cursor-pointer"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                     required
                   >
                     <option value="income">Fattura Incasso</option>
