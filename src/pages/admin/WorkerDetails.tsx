@@ -197,18 +197,25 @@ export default function WorkerDetails({ worker, onClose }: WorkerDetailsProps) {
 
   const handleSavePaymentCard = async () => {
     try {
-      await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           payment_card_number: paymentCard.payment_card_number || null,
           payment_card_assigned_date: paymentCard.payment_card_assigned_date || null,
         })
-        .eq('id', worker.id);
+        .eq('id', worker.id)
+        .select();
 
-      alert('Carta acquisti aggiornata');
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Carta aggiornata con successo:', data);
+      alert('Carta acquisti aggiornata con successo!');
     } catch (error) {
       console.error('Error saving payment card:', error);
-      alert('Errore nel salvataggio della carta acquisti');
+      alert('Errore nel salvataggio della carta acquisti: ' + (error instanceof Error ? error.message : 'Errore sconosciuto'));
     }
   };
 
@@ -241,8 +248,16 @@ export default function WorkerDetails({ worker, onClose }: WorkerDetailsProps) {
         <div className="p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold">{worker.full_name}</h2>
-              <p className="text-blue-100">{worker.email}</p>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold">{worker.full_name}</h2>
+                <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full text-xs font-medium">
+                  {worker.role === 'worker' && 'Operaio'}
+                  {worker.role === 'administrator' && 'Amministratore'}
+                  {worker.role === 'org_manager' && 'Responsabile Organizzazione'}
+                  {worker.role === 'sales_manager' && 'Responsabile Commerciale'}
+                </span>
+              </div>
+              <p className="text-blue-100 mt-1">{worker.email}</p>
             </div>
             <button
               onClick={onClose}
@@ -553,7 +568,12 @@ export default function WorkerDetails({ worker, onClose }: WorkerDetailsProps) {
 
           {activeTab === 'card' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Carta Acquisti</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Carta Acquisti</h3>
+                <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  Disponibile per tutti i ruoli
+                </span>
+              </div>
 
               <div className="bg-white border rounded-lg p-6 space-y-4">
                 <div>
