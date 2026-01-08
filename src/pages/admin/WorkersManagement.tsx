@@ -171,12 +171,19 @@ export default function WorkersManagement() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
+      console.log('Current user role:', profile?.role);
+      console.log('Is admin:', isAdmin);
+
+      if (!session?.access_token) {
+        throw new Error('Session non valida. Riprova ad effettuare il login.');
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/change-password`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
             'Content-Type': 'application/json',
           },
@@ -188,9 +195,10 @@ export default function WorkersManagement() {
       );
 
       const result = await response.json();
+      console.log('Change password response:', result);
 
       if (!response.ok) {
-        throw new Error(result.error || 'Errore durante il cambio password');
+        throw new Error(result.error || `Errore durante il cambio password (${response.status})`);
       }
 
       alert('Password modificata con successo');
