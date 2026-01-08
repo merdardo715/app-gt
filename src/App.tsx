@@ -20,7 +20,9 @@ import CardsManagement from './pages/admin/CardsManagement';
 import TimeTracking from './pages/worker/TimeTracking';
 import WorkerAssignments from './pages/worker/WorkerAssignments';
 import LeaveRequests from './pages/worker/LeaveRequests';
+import DailyReports from './pages/worker/DailyReports';
 import AnnouncementsView from './pages/shared/AnnouncementsView';
+import AllDailyReports from './pages/shared/AllDailyReports';
 import CompanyRegulations from './pages/admin/CompanyRegulations';
 import CompanyRegulationsView from './pages/shared/CompanyRegulationsView';
 import AccountingManagement from './pages/admin/AccountingManagement';
@@ -111,6 +113,8 @@ function AppContent() {
             return <AssignmentsManagement />;
           case 'time-entries':
             return <TimeEntriesView />;
+          case 'daily-reports':
+            return <AllDailyReports />;
           case 'leave-balances':
             return <LeaveBalancesManagement />;
           case 'leave-requests':
@@ -147,6 +151,8 @@ function AppContent() {
             return <AssignmentsManagement />;
           case 'time-entries':
             return <CombinedTimeTracking />;
+          case 'daily-reports':
+            return <AllDailyReports />;
           case 'leave-balances':
             return <LeaveBalancesManagement />;
           case 'leave-requests':
@@ -183,6 +189,8 @@ function AppContent() {
             return <AssignmentsManagement />;
           case 'time-tracking':
             return <CombinedTimeTracking />;
+          case 'daily-reports':
+            return <AllDailyReports />;
           case 'leave-balances':
             return <LeaveBalancesManagement />;
           case 'leave-requests':
@@ -209,6 +217,8 @@ function AppContent() {
             return <WorkerDashboard />;
           case 'time-tracking':
             return <TimeTracking />;
+          case 'daily-reports':
+            return <AllDailyReports />;
           case 'assignments':
             return <WorkerAssignments />;
           case 'leave-requests':
@@ -231,6 +241,8 @@ function AppContent() {
             return <WorkerDashboard />;
           case 'time-tracking':
             return <TimeTracking />;
+          case 'daily-reports-worker':
+            return <DailyReports />;
           case 'assignments':
             return <WorkerAssignments />;
           case 'leave-requests':

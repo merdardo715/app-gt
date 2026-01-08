@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Building2, Users, Calendar, MessageSquare, LayoutDashboard, Clock, Truck, FileText, CalendarCheck, CalendarClock, CreditCard, UserCheck, BookOpen, Receipt, Bell } from 'lucide-react';
+import { LogOut, Building2, Users, Calendar, MessageSquare, LayoutDashboard, Clock, Truck, FileText, CalendarCheck, CalendarClock, CreditCard, UserCheck, BookOpen, Receipt, Bell, ClipboardList } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
 interface LayoutProps {
@@ -20,6 +20,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'clients', label: 'Clienti', icon: UserCheck },
     { id: 'assignments', label: 'Assegnazioni', icon: Calendar },
     { id: 'time-entries', label: 'Timbrature', icon: Clock },
+    { id: 'daily-reports', label: 'Rapportini', icon: ClipboardList },
     { id: 'leave-balances', label: 'Monte Ore', icon: CalendarClock },
     { id: 'leave-requests', label: 'Richieste Permessi', icon: FileText },
     { id: 'availability', label: 'Disponibilità', icon: CalendarCheck },
@@ -33,6 +34,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
   const workerMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'time-tracking', label: 'Timbratura', icon: Clock },
+    { id: 'daily-reports-worker', label: 'Rapportini', icon: ClipboardList },
     { id: 'assignments', label: 'Assegnazioni', icon: Calendar },
     { id: 'leave-requests', label: 'Permessi', icon: FileText },
     { id: 'deadlines', label: 'Scadenze', icon: Bell },
@@ -43,6 +45,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
   const salesManagerMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'time-tracking', label: 'Timbratura', icon: Clock },
+    { id: 'daily-reports', label: 'Rapportini', icon: ClipboardList },
     { id: 'assignments', label: 'Assegnazioni', icon: Calendar },
     { id: 'leave-requests', label: 'Permessi', icon: FileText },
     { id: 'clients', label: 'Clienti', icon: UserCheck },
@@ -59,6 +62,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'clients', label: 'Clienti', icon: UserCheck },
     { id: 'assignments', label: 'Assegnazioni', icon: Calendar },
     { id: 'time-tracking', label: 'Timbratura', icon: Clock },
+    { id: 'daily-reports', label: 'Rapportini', icon: ClipboardList },
     { id: 'leave-balances', label: 'Monte Ore', icon: CalendarClock },
     { id: 'leave-requests', label: 'Richieste Permessi', icon: FileText },
     { id: 'availability', label: 'Disponibilità', icon: CalendarCheck },
@@ -77,6 +81,7 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'clients', label: 'Clienti', icon: UserCheck },
     { id: 'assignments', label: 'Assegnazioni', icon: Calendar },
     { id: 'time-entries', label: 'Timbrature', icon: Clock },
+    { id: 'daily-reports', label: 'Rapportini', icon: ClipboardList },
     { id: 'leave-balances', label: 'Monte Ore', icon: CalendarClock },
     { id: 'leave-requests', label: 'Richieste Permessi', icon: FileText },
     { id: 'availability', label: 'Disponibilità', icon: CalendarCheck },
