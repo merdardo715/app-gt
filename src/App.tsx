@@ -206,8 +206,6 @@ function AppContent() {
             return <AnnouncementsManagement />;
           case 'cards':
             return <CardsManagement />;
-          case 'accounting':
-            return <AccountingManagement />;
           case 'deadlines':
             return <DeadlinesNotifications />;
           case 'regulations':

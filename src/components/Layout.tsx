@@ -69,7 +69,6 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
     { id: 'availability', label: 'Disponibilità', icon: CalendarCheck },
     { id: 'announcements', label: 'Annunci', icon: MessageSquare },
     { id: 'cards', label: 'Carte', icon: CreditCard },
-    { id: 'accounting', label: 'Contabilità', icon: Receipt },
     { id: 'deadlines', label: 'Scadenze', icon: Bell },
     { id: 'regulations', label: 'Regolamento', icon: BookOpen },
   ];
