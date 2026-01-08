@@ -21,6 +21,8 @@ export default function DeadlinesNotifications() {
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
 
+  const canViewAllDeadlines = isAdmin || profile?.role === 'administrator' || profile?.role === 'org_manager';
+
   useEffect(() => {
     loadDeadlines();
   }, [profile]);
@@ -35,7 +37,7 @@ export default function DeadlinesNotifications() {
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-      if (isAdmin) {
+      if (canViewAllDeadlines) {
         const [medicalRes, coursesRes, ribaRes, scheduleRes, invoicesRes, vehiclesRes] = await Promise.all([
           supabase
             .from('worker_medical_checkups')
@@ -316,7 +318,7 @@ export default function DeadlinesNotifications() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Avvisi Scadenze</h1>
         <p className="text-gray-600 mt-1">
-          {isAdmin ? 'Monitora tutte le scadenze aziendali' : 'Le tue scadenze personali'}
+          {canViewAllDeadlines ? 'Monitora tutte le scadenze aziendali' : 'Le tue scadenze personali'}
         </p>
       </div>
 
@@ -376,7 +378,7 @@ export default function DeadlinesNotifications() {
               <option value="low">Bassa</option>
             </select>
           </div>
-          {isAdmin && (
+          {canViewAllDeadlines && (
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Filtra per Tipo
