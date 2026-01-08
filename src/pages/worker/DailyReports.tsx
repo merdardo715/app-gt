@@ -53,15 +53,22 @@ export default function DailyReports() {
 
   const loadWorksites = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('worksites')
         .select('id, name, address')
-        .eq('status', 'active')
         .order('name');
 
+      if (error) {
+        console.error('Error loading worksites:', error);
+        alert('Errore nel caricamento dei cantieri: ' + error.message);
+        return;
+      }
+
+      console.log('Cantieri caricati:', data);
       setWorksites(data || []);
     } catch (error) {
       console.error('Error loading worksites:', error);
+      alert('Errore nel caricamento dei cantieri');
     }
   };
 
@@ -349,19 +356,25 @@ export default function DailyReports() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cantiere *
                 </label>
-                <select
-                  value={formData.worksite_id}
-                  onChange={(e) => setFormData({ ...formData, worksite_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Seleziona cantiere</option>
-                  {worksites.map((worksite) => (
-                    <option key={worksite.id} value={worksite.id}>
-                      {worksite.name} - {worksite.address}
-                    </option>
-                  ))}
-                </select>
+                {worksites.length === 0 ? (
+                  <div className="w-full px-4 py-2 border border-yellow-300 bg-yellow-50 rounded-lg text-yellow-800">
+                    Nessun cantiere disponibile. Contatta l'amministratore.
+                  </div>
+                ) : (
+                  <select
+                    value={formData.worksite_id}
+                    onChange={(e) => setFormData({ ...formData, worksite_id: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Seleziona cantiere</option>
+                    {worksites.map((worksite) => (
+                      <option key={worksite.id} value={worksite.id}>
+                        {worksite.name} - {worksite.address}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
