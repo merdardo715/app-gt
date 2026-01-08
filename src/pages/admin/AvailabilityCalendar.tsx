@@ -178,7 +178,7 @@ export default function AvailabilityCalendar() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Calendario Disponibilità</h1>
-        <p className="text-gray-600 mt-1">Visualizza lo stato di disponibilità dei lavoratori</p>
+        <p className="text-gray-600 mt-1">Visualizza lo stato di disponibilità del personale</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -322,7 +322,7 @@ export default function AvailabilityCalendar() {
             <p className="font-semibold mb-1">Informazioni:</p>
             <ul className="list-disc list-inside space-y-1">
               <li>Il calendario mostra solo le richieste approvate</li>
-              <li>I lavoratori in ferie, ROL o malattia sono contrassegnati in rosso</li>
+              <li>Il personale in ferie, ROL o malattia è contrassegnato in rosso</li>
               <li>Lo stato attuale mostra la disponibilità di oggi</li>
             </ul>
           </div>

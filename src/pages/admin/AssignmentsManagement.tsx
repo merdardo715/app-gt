@@ -197,7 +197,7 @@ export default function AssignmentsManagement() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestione Assegnazioni</h1>
-          <p className="text-gray-600 mt-1">Assegna lavoratori ai cantieri</p>
+          <p className="text-gray-600 mt-1">Assegna personale ai cantieri</p>
         </div>
         <button
           onClick={() => {
@@ -356,7 +356,7 @@ export default function AssignmentsManagement() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Lavoratore *
+                  Personale *
                 </label>
                 <select
                   value={formData.worker_id}
@@ -365,7 +365,7 @@ export default function AssignmentsManagement() {
                   style={{ backgroundImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")", backgroundPosition: "right 0.5rem center" }}
                   required
                 >
-                  <option value="">Seleziona lavoratore</option>
+                  <option value="">Seleziona personale</option>
                   {workers.map((worker) => (
                     <option key={worker.id} value={worker.id}>
                       {worker.full_name} {worker.position && `- ${worker.position}`}
