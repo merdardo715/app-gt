@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { ArrowLeft, Plus, Trash2, Download, Euro, FileText, Wallet } from 'lucide-react';
 
 interface Worksite {
@@ -40,6 +41,7 @@ interface Props {
 }
 
 export default function WorksiteFinancials({ worksiteId, onBack }: Props) {
+  const { profile } = useAuth();
   const [worksite, setWorksite] = useState<Worksite | null>(null);
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -109,14 +111,15 @@ export default function WorksiteFinancials({ worksiteId, onBack }: Props) {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user || !profile?.organization_id) throw new Error('User not authenticated');
 
       const { error } = await supabase.from('worksite_revenues').insert({
         worksite_id: worksiteId,
         amount: parseFloat(revenueForm.amount),
         description: revenueForm.description,
         date: revenueForm.date,
-        created_by: user.id
+        created_by: user.id,
+        organization_id: profile.organization_id
       });
 
       if (error) throw error;
@@ -143,7 +146,7 @@ export default function WorksiteFinancials({ worksiteId, onBack }: Props) {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user || !profile?.organization_id) throw new Error('User not authenticated');
 
       const { error } = await supabase.from('worksite_invoices').insert({
         worksite_id: worksiteId,
@@ -151,7 +154,8 @@ export default function WorksiteFinancials({ worksiteId, onBack }: Props) {
         invoice_number: invoiceForm.invoice_number,
         description: invoiceForm.description,
         date: invoiceForm.date,
-        created_by: user.id
+        created_by: user.id,
+        organization_id: profile.organization_id
       });
 
       if (error) throw error;
@@ -179,14 +183,15 @@ export default function WorksiteFinancials({ worksiteId, onBack }: Props) {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user || !profile?.organization_id) throw new Error('User not authenticated');
 
       const { error } = await supabase.from('worksite_liquid_assets').insert({
         worksite_id: worksiteId,
         amount: parseFloat(liquidForm.amount),
         description: liquidForm.description,
         date: liquidForm.date,
-        created_by: user.id
+        created_by: user.id,
+        organization_id: profile.organization_id
       });
 
       if (error) throw error;
