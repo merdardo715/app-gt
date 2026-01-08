@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FileText, Calendar, AlertCircle, TrendingUp, CreditCard,
-  Plus, Trash2, Edit2, CheckCircle, X, DollarSign
+  Plus, Trash2, Edit2, CheckCircle, X, DollarSign, Filter
 } from 'lucide-react';
 
 interface IssuedInvoice {
@@ -72,6 +72,8 @@ interface InvoiceCalculation {
   created_at: string;
 }
 
+type TimeFilter = 'all' | 'past' | 'today' | 'week' | 'month' | 'future' | 'custom';
+
 export default function AccountingManagement() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'invoices' | 'schedule' | 'riba' | 'advances' | 'cards' | 'calculations'>('invoices');
@@ -83,6 +85,10 @@ export default function AccountingManagement() {
   const [invoiceAdvances, setInvoiceAdvances] = useState<InvoiceAdvance[]>([]);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummary[]>([]);
   const [invoiceCalculations, setInvoiceCalculations] = useState<InvoiceCalculation[]>([]);
+
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -578,6 +584,73 @@ export default function AccountingManagement() {
     return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
   };
 
+  const getDateRange = (): { start: Date | null; end: Date | null } => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (timeFilter) {
+      case 'past':
+        return { start: null, end: new Date(today.getTime() - 1) };
+
+      case 'today':
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
+        return { start: today, end: endOfToday };
+
+      case 'week':
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() + 7);
+        weekEnd.setHours(23, 59, 59, 999);
+        return { start: today, end: weekEnd };
+
+      case 'month':
+        const monthEnd = new Date(today);
+        monthEnd.setMonth(today.getMonth() + 1);
+        monthEnd.setHours(23, 59, 59, 999);
+        return { start: today, end: monthEnd };
+
+      case 'future':
+        return { start: today, end: null };
+
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          const start = new Date(customStartDate);
+          const end = new Date(customEndDate);
+          end.setHours(23, 59, 59, 999);
+          return { start, end };
+        }
+        return { start: null, end: null };
+
+      default:
+        return { start: null, end: null };
+    }
+  };
+
+  const filterByDate = <T extends { due_date?: string; issue_date?: string; advance_date?: string; invoice_date?: string }>(
+    items: T[]
+  ): T[] => {
+    if (timeFilter === 'all') return items;
+
+    const { start, end } = getDateRange();
+
+    return items.filter(item => {
+      const dateStr = item.due_date || item.issue_date || item.advance_date || item.invoice_date;
+      if (!dateStr) return false;
+
+      const itemDate = new Date(dateStr);
+
+      if (start && end) {
+        return itemDate >= start && itemDate <= end;
+      } else if (start) {
+        return itemDate >= start;
+      } else if (end) {
+        return itemDate <= end;
+      }
+
+      return true;
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -597,6 +670,77 @@ export default function AccountingManagement() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Amministrazione Contabile</h1>
         <p className="text-gray-600 mt-1">Gestione contabilità e pagamenti</p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Filter className="w-5 h-5 text-gray-600" />
+          <h3 className="font-semibold text-gray-900">Filtro Temporale</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="col-span-1 md:col-span-2 lg:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Periodo
+            </label>
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Tutti</option>
+              <option value="past">Passato (prima di oggi)</option>
+              <option value="today">Oggi</option>
+              <option value="week">Prossimi 7 giorni</option>
+              <option value="month">Prossimi 30 giorni</option>
+              <option value="future">Futuro (da oggi in poi)</option>
+              <option value="custom">Periodo Personalizzato</option>
+            </select>
+          </div>
+
+          {timeFilter === 'custom' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Data Inizio
+                </label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Data Fine
+                </label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {timeFilter !== 'all' && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Filtro attivo:</strong> {
+                timeFilter === 'past' ? 'Visualizzazione transazioni passate' :
+                timeFilter === 'today' ? 'Visualizzazione transazioni di oggi' :
+                timeFilter === 'week' ? 'Visualizzazione prossimi 7 giorni' :
+                timeFilter === 'month' ? 'Visualizzazione prossimi 30 giorni' :
+                timeFilter === 'future' ? 'Visualizzazione transazioni future' :
+                timeFilter === 'custom' && customStartDate && customEndDate ?
+                  `Dal ${new Date(customStartDate).toLocaleDateString('it-IT')} al ${new Date(customEndDate).toLocaleDateString('it-IT')}` :
+                'Seleziona le date personalizzate'
+              }
+            </p>
+          </div>
+        )}
       </div>
 
       {upcomingRiba.length > 0 && (
@@ -694,7 +838,14 @@ export default function AccountingManagement() {
           {activeTab === 'invoices' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Fatture Emesse</h2>
+                <h2 className="text-lg font-semibold">
+                  Fatture Emesse
+                  {timeFilter !== 'all' && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({filterByDate(issuedInvoices).length} di {issuedInvoices.length})
+                    </span>
+                  )}
+                </h2>
                 <button
                   onClick={() => setShowInvoiceModal(true)}
                   className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -704,9 +855,9 @@ export default function AccountingManagement() {
                 </button>
               </div>
 
-              {issuedInvoices.length > 0 ? (
+              {filterByDate(issuedInvoices).length > 0 ? (
                 <div className="space-y-2">
-                  {issuedInvoices.map((invoice) => (
+                  {filterByDate(issuedInvoices).map((invoice) => (
                     <div
                       key={invoice.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100"
@@ -750,7 +901,11 @@ export default function AccountingManagement() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-500 py-8">Nessuna fattura emessa</p>
+                <p className="text-center text-gray-500 py-8">
+                  {timeFilter !== 'all' && issuedInvoices.length > 0
+                    ? 'Nessuna fattura nel periodo selezionato'
+                    : 'Nessuna fattura emessa'}
+                </p>
               )}
             </div>
           )}
@@ -758,7 +913,14 @@ export default function AccountingManagement() {
           {activeTab === 'schedule' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Scadenziario</h2>
+                <h2 className="text-lg font-semibold">
+                  Scadenziario
+                  {timeFilter !== 'all' && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({filterByDate(paymentSchedule).length} di {paymentSchedule.length})
+                    </span>
+                  )}
+                </h2>
                 <button
                   onClick={() => setShowScheduleModal(true)}
                   className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
@@ -768,9 +930,9 @@ export default function AccountingManagement() {
                 </button>
               </div>
 
-              {paymentSchedule.length > 0 ? (
+              {filterByDate(paymentSchedule).length > 0 ? (
                 <div className="space-y-2">
-                  {paymentSchedule.map((item) => (
+                  {filterByDate(paymentSchedule).map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100"
@@ -815,7 +977,11 @@ export default function AccountingManagement() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-500 py-8">Nessuna scadenza registrata</p>
+                <p className="text-center text-gray-500 py-8">
+                  {timeFilter !== 'all' && paymentSchedule.length > 0
+                    ? 'Nessuna scadenza nel periodo selezionato'
+                    : 'Nessuna scadenza registrata'}
+                </p>
               )}
             </div>
           )}
@@ -823,7 +989,14 @@ export default function AccountingManagement() {
           {activeTab === 'riba' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">RiBa Fornitori</h2>
+                <h2 className="text-lg font-semibold">
+                  RiBa Fornitori
+                  {timeFilter !== 'all' && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({filterByDate(supplierRiba).length} di {supplierRiba.length})
+                    </span>
+                  )}
+                </h2>
                 <button
                   onClick={() => setShowRibaModal(true)}
                   className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700"
@@ -833,9 +1006,9 @@ export default function AccountingManagement() {
                 </button>
               </div>
 
-              {supplierRiba.length > 0 ? (
+              {filterByDate(supplierRiba).length > 0 ? (
                 <div className="space-y-2">
-                  {supplierRiba.map((riba) => {
+                  {filterByDate(supplierRiba).map((riba) => {
                     const daysUntilDue = Math.ceil((new Date(riba.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                     const isUpcoming = daysUntilDue <= 7 && daysUntilDue > 0 && riba.payment_status === 'pending';
 
@@ -892,7 +1065,11 @@ export default function AccountingManagement() {
                   })}
                 </div>
               ) : (
-                <p className="text-center text-gray-500 py-8">Nessun RiBa registrato</p>
+                <p className="text-center text-gray-500 py-8">
+                  {timeFilter !== 'all' && supplierRiba.length > 0
+                    ? 'Nessun RiBa nel periodo selezionato'
+                    : 'Nessun RiBa registrato'}
+                </p>
               )}
             </div>
           )}
@@ -900,7 +1077,14 @@ export default function AccountingManagement() {
           {activeTab === 'advances' && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Anticipi Fatture</h2>
+                <h2 className="text-lg font-semibold">
+                  Anticipi Fatture
+                  {timeFilter !== 'all' && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({filterByDate(invoiceAdvances).length} di {invoiceAdvances.length})
+                    </span>
+                  )}
+                </h2>
                 <button
                   onClick={() => setShowAdvanceModal(true)}
                   className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
@@ -910,9 +1094,9 @@ export default function AccountingManagement() {
                 </button>
               </div>
 
-              {invoiceAdvances.length > 0 ? (
+              {filterByDate(invoiceAdvances).length > 0 ? (
                 <div className="space-y-2">
-                  {invoiceAdvances.map((advance) => (
+                  {filterByDate(invoiceAdvances).map((advance) => (
                     <div
                       key={advance.id}
                       className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100"
@@ -953,7 +1137,11 @@ export default function AccountingManagement() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-gray-500 py-8">Nessun anticipo registrato</p>
+                <p className="text-center text-gray-500 py-8">
+                  {timeFilter !== 'all' && invoiceAdvances.length > 0
+                    ? 'Nessun anticipo nel periodo selezionato'
+                    : 'Nessun anticipo registrato'}
+                </p>
               )}
             </div>
           )}
@@ -1035,7 +1223,14 @@ export default function AccountingManagement() {
           {activeTab === 'calculations' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">Calcolo Fatture</h2>
+                <h2 className="text-lg font-semibold">
+                  Calcolo Fatture
+                  {timeFilter !== 'all' && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({filterByDate(invoiceCalculations).length} di {invoiceCalculations.length})
+                    </span>
+                  )}
+                </h2>
                 <button
                   onClick={() => setShowCalculationModal(true)}
                   className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
@@ -1049,7 +1244,7 @@ export default function AccountingManagement() {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-green-900 mb-4">Fatture Incasso</h3>
                   <div className="space-y-2 mb-4">
-                    {invoiceCalculations.filter(c => c.type === 'income').map((calc) => (
+                    {filterByDate(invoiceCalculations).filter(c => c.type === 'income').map((calc) => (
                       <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{calc.invoice_number}</p>
@@ -1073,7 +1268,7 @@ export default function AccountingManagement() {
                       <p className="text-sm font-medium text-green-900">Totale Incassi:</p>
                       <p className="text-2xl font-bold text-green-700">
                         {formatCurrency(
-                          invoiceCalculations
+                          filterByDate(invoiceCalculations)
                             .filter(c => c.type === 'income')
                             .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
                         )}
@@ -1085,7 +1280,7 @@ export default function AccountingManagement() {
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-red-900 mb-4">Fatture Spese</h3>
                   <div className="space-y-2 mb-4">
-                    {invoiceCalculations.filter(c => c.type === 'expense').map((calc) => (
+                    {filterByDate(invoiceCalculations).filter(c => c.type === 'expense').map((calc) => (
                       <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{calc.invoice_number}</p>
@@ -1109,7 +1304,7 @@ export default function AccountingManagement() {
                       <p className="text-sm font-medium text-red-900">Totale Spese:</p>
                       <p className="text-2xl font-bold text-red-700">
                         {formatCurrency(
-                          invoiceCalculations
+                          filterByDate(invoiceCalculations)
                             .filter(c => c.type === 'expense')
                             .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
                         )}
@@ -1121,7 +1316,7 @@ export default function AccountingManagement() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-blue-900 mb-4">Preventivi</h3>
                   <div className="space-y-2 mb-4">
-                    {invoiceCalculations.filter(c => c.type === 'estimate').map((calc) => (
+                    {filterByDate(invoiceCalculations).filter(c => c.type === 'estimate').map((calc) => (
                       <div key={calc.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{calc.invoice_number}</p>
@@ -1145,7 +1340,7 @@ export default function AccountingManagement() {
                       <p className="text-sm font-medium text-blue-900">Totale Preventivi:</p>
                       <p className="text-2xl font-bold text-blue-700">
                         {formatCurrency(
-                          invoiceCalculations
+                          filterByDate(invoiceCalculations)
                             .filter(c => c.type === 'estimate')
                             .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
                         )}
@@ -1154,6 +1349,47 @@ export default function AccountingManagement() {
                   </div>
                 </div>
               </div>
+
+              {timeFilter !== 'all' && (
+                <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 border border-emerald-200 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">Riepilogo Periodo Filtrato</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Incassi Totali</p>
+                      <p className="text-xl font-bold text-green-700">
+                        {formatCurrency(
+                          filterByDate(invoiceCalculations)
+                            .filter(c => c.type === 'income')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Spese Totali</p>
+                      <p className="text-xl font-bold text-red-700">
+                        {formatCurrency(
+                          filterByDate(invoiceCalculations)
+                            .filter(c => c.type === 'expense')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Bilancio Netto</p>
+                      <p className="text-xl font-bold text-blue-700">
+                        {formatCurrency(
+                          filterByDate(invoiceCalculations)
+                            .filter(c => c.type === 'income')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0) -
+                          filterByDate(invoiceCalculations)
+                            .filter(c => c.type === 'expense')
+                            .reduce((sum, c) => sum + parseFloat(c.amount.toString()), 0)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
