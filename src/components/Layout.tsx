@@ -116,8 +116,8 @@ export default function Layout({ children, currentPage, onPageChange }: LayoutPr
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-blue-900 text-xl font-bold">GT</span>
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-md p-1">
+                <img src="/logo.jpg" alt="GT Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-xl font-bold">Gestione Cantieri</h1>

@@ -123,8 +123,8 @@ export default function Register({ onBackToLogin, onRegisterSuccess }: RegisterP
         </button>
 
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-900 to-blue-700 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-            <span className="text-white text-3xl font-bold">GT</span>
+          <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg p-2">
+            <img src="/logo.jpg" alt="GT Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Registra la Tua Azienda</h1>
           <p className="text-gray-600 text-sm mt-1">Inizia a gestire i tuoi cantieri</p>
