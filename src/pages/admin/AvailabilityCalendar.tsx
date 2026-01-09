@@ -163,6 +163,24 @@ export default function AvailabilityCalendar() {
     });
   };
 
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      active: 'bg-green-100 text-green-800',
+      on_break: 'bg-orange-100 text-orange-800',
+      off_site: 'bg-gray-100 text-gray-800',
+    };
+    const labels = {
+      active: 'Attivo',
+      on_break: 'In Pausa',
+      off_site: 'Fuori Sede',
+    };
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badges[status as keyof typeof badges]}`}>
+        {labels[status as keyof typeof labels]}
+      </span>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -283,6 +301,9 @@ export default function AvailabilityCalendar() {
                   ) : (
                     <XCircle className="w-5 h-5 text-red-600" />
                   )}
+                </div>
+                <div className="mt-2">
+                  {getStatusBadge(worker.status)}
                 </div>
                 {!isAvailable && (
                   <div className="mt-2 text-xs text-gray-700">

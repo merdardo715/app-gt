@@ -271,23 +271,6 @@ export default function WorkersManagement() {
     );
   };
 
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      active: 'bg-green-100 text-green-800',
-      on_break: 'bg-orange-100 text-orange-800',
-      off_site: 'bg-gray-100 text-gray-800',
-    };
-    const labels = {
-      active: 'Attivo',
-      on_break: 'In Pausa',
-      off_site: 'Fuori Sede',
-    };
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badges[status as keyof typeof badges]}`}>
-        {labels[status as keyof typeof labels]}
-      </span>
-    );
-  };
 
   if (loading) {
     return (
@@ -346,9 +329,6 @@ export default function WorkersManagement() {
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Posizione
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stato
-                </th>
                 <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Azioni
                 </th>
@@ -390,7 +370,6 @@ export default function WorkersManagement() {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4">{getStatusBadge(worker.status)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end space-x-2">
                       <button
